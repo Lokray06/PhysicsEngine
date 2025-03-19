@@ -7,13 +7,14 @@ import java.text.DecimalFormat;
 
 public class Debugger {
 
-    static DecimalFormat df = new DecimalFormat("0.#############################");
+    public static DecimalFormat df = new DecimalFormat("0.#############################");
 
     // -----------------------------------------------------------------
     // Debug Method for Rigidbody: Prints all internal state details.
     // -----------------------------------------------------------------
     public static void debugBody(Body body) {
-        System.out.println("===== RigidBody Debug Information =====");
+        System.out.println("Uptime: " + Engine.uptime);
+        System.out.println("=====" +  body.getName()  + "=====");
         System.out.println("Mass: " + body.getMass() + " (in appropriate units)");
         System.out.println("Position: " + body.getPos());
         System.out.println("Velocity: " + body.getVel());

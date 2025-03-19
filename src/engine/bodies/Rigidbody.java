@@ -1,11 +1,18 @@
 package engine.bodies;
 
 import engine.Vector;
+import engine.Vector2;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
+
 import static engine.Constants.*;
 
-public class Rigidbody extends Body {
+public class Rigidbody extends Body
+{
+    
+    public String name = "Unnamed Body";
+    
     // --- Physical properties ---
     public double mass;
     public Vector velocity;
@@ -13,12 +20,12 @@ public class Rigidbody extends Body {
     public Vector position;
     public Vector sumOfForces;
     public Vector sumOfAccelerations;
-
+    
     // --- Energy values ---
     public double kineticEnergy;
     public double potentialEnergy;
     public double internalEnergy;
-
+    
     // --- Additional computed fields ---
     public double speedPercentC;
     public double gamma;
@@ -26,22 +33,23 @@ public class Rigidbody extends Body {
     public double momentumMagnitude;
     public double forceMagnitude;
     public double netAccelerationMagnitude;
-
+    
     // --- Constant values (applied each update if set) ---
     public Vector constantVelocity;
     public Vector constantAcceleration;
     public Vector constantForce;
-
+    
     // -----------------------------------------------------------------
     // Constructors, setters, and utility methods (omitted for brevity)
     // -----------------------------------------------------------------
-    public Rigidbody(String massInput) {
+    public Rigidbody(String massInput)
+    {
         this.mass = parseMass(massInput);
-        this.velocity = new Vector(0, 0, 0);
-        this.momentum = new Vector(0, 0, 0);
-        this.position = new Vector(0, 0, 0);
-        this.sumOfForces = new Vector(0, 0, 0);
-        this.sumOfAccelerations = new Vector(0, 0, 0);
+        this.velocity = new Vector2(0, 0);
+        this.momentum = new Vector2(0, 0);
+        this.position = new Vector2(0, 0);
+        this.sumOfForces = new Vector2(0, 0);
+        this.sumOfAccelerations = new Vector2(0, 0);
         this.kineticEnergy = 0;
         this.potentialEnergy = 0;
         this.internalEnergy = 0;
@@ -55,109 +63,138 @@ public class Rigidbody extends Body {
         this.constantAcceleration = null;
         this.constantForce = null;
     }
-
-    private double parseMass(String massInput) {
+    
+    private double parseMass(String massInput)
+    {
         BigDecimal massValue = new BigDecimal(massInput, new MathContext(20));
         double magnitude = massValue.doubleValue();
         double absMag = Math.abs(magnitude);
-        if (absMag >= 1e27) {
+        if(absMag >= 1e27)
+        {
             return magnitude / SOLAR_MASS;
-        } else if (absMag >= 1e23) {
+        }
+        else if(absMag >= 1e23)
+        {
             return magnitude / EARTH_MASS;
-        } else {
+        }
+        else
+        {
             return magnitude;
         }
     }
-
-    public void setMass(String massInput) {
+    
+    public void setMass(String massInput)
+    {
         this.mass = parseMass(massInput);
     }
-
-    public void setInitialVelocity(Vector velocity) {
+    
+    public void setInitialVelocity(Vector velocity)
+    {
         this.velocity = velocity;
     }
-
-    public void setInitialMomentum(Vector momentum) {
+    
+    public void setInitialMomentum(Vector momentum)
+    {
         this.momentum = momentum;
     }
-
-    public void setInitialPosition(Vector position) {
+    
+    public void setInitialPosition(Vector position)
+    {
         this.position = position;
     }
-
-    public void setInitialSumOfForces(Vector sumOfForces) {
+    
+    public void setInitialSumOfForces(Vector sumOfForces)
+    {
         this.sumOfForces = sumOfForces;
     }
-
-    public void setInitialSumOfAccelerations(Vector sumOfAccelerations) {
+    
+    public void setInitialSumOfAccelerations(Vector sumOfAccelerations)
+    {
         this.sumOfAccelerations = sumOfAccelerations;
     }
-
-    public void setInitialKineticEnergy(double kineticEnergy) {
+    
+    public void setInitialKineticEnergy(double kineticEnergy)
+    {
         this.kineticEnergy = kineticEnergy;
     }
-
-    public void setInitialPotentialEnergy(double potentialEnergy) {
+    
+    public void setInitialPotentialEnergy(double potentialEnergy)
+    {
         this.potentialEnergy = potentialEnergy;
     }
-
-    public void setInitialInternalEnergy(double internalEnergy) {
+    
+    public void setInitialInternalEnergy(double internalEnergy)
+    {
         this.internalEnergy = internalEnergy;
     }
-
-    public void setConstantVelocity(Vector velocity) {
+    
+    public void setConstantVelocity(Vector velocity)
+    {
         this.constantVelocity = velocity;
     }
-
-    public void setConstantAcceleration(Vector acceleration) {
+    
+    public void setConstantAcceleration(Vector acceleration)
+    {
         this.constantAcceleration = acceleration;
     }
-
-    public void setConstantForce(Vector force) {
+    
+    public void setConstantForce(Vector force)
+    {
         this.constantForce = force;
     }
-
+    
     // -----------------------------------------------------------------
     // Force and Acceleration Accumulation
     // -----------------------------------------------------------------
-    public void addForce(Vector force) {
+    public void addForce(Vector force)
+    {
         sumOfForces = sumOfForces.add(force);
     }
-
-    public void addAcceleration(Vector acceleration) {
+    
+    public void addAcceleration(Vector acceleration)
+    {
         sumOfAccelerations = sumOfAccelerations.add(acceleration);
     }
-
+    
     // -----------------------------------------------------------------
     // Update Velocity and Momentum (Relativistic)
     // -----------------------------------------------------------------
-    public void updateVelocity(double dt) {
-        if (mass == 0) {
-            if (constantVelocity != null) {
+    public void updateVelocity(double dt)
+    {
+        if(mass == 0)
+        {
+            if(constantVelocity != null)
+            {
                 velocity = constantVelocity.copy();
-            } else if (velocity.magnitude() > 0) {
+            }
+            else if(velocity.magnitude() > 0)
+            {
                 velocity = velocity.copy().normalize().mul(SPEED_OF_LIGHT);
-            } else {
-                velocity = new Vector(SPEED_OF_LIGHT, 0, 0);
+            }
+            else
+            {
+                velocity = new Vector2(SPEED_OF_LIGHT, 0);
             }
             velocityMagnitude = velocity.magnitude();
             speedPercentC = (velocityMagnitude / SPEED_OF_LIGHT) * 100;
-            sumOfForces = new Vector(0, 0, 0);
-            sumOfAccelerations = new Vector(0, 0, 0);
+            sumOfForces = new Vector2(0, 0);
+            sumOfAccelerations = new Vector2(0, 0);
             gamma = Double.POSITIVE_INFINITY;
             return;
         }
-
-        if (constantForce != null) {
+        
+        if(constantForce != null)
+        {
             sumOfForces = sumOfForces.add(constantForce);
         }
-        if (constantAcceleration != null) {
+        if(constantAcceleration != null)
+        {
             sumOfAccelerations = sumOfAccelerations.add(constantAcceleration);
         }
-
+        
         netAccelerationMagnitude = sumOfAccelerations.mul(mass).magnitude();
         sumOfForces = sumOfForces.add(sumOfAccelerations.mul(mass));
-        sumOfAccelerations = new Vector(0, 0, 0);
+        sumOfAccelerations = new Vector2(0, 0);
         Vector forceContribution = sumOfForces.copy().mul(dt);
         momentum = momentum.add(forceContribution);
         forceMagnitude = sumOfForces.magnitude();
@@ -167,55 +204,67 @@ public class Rigidbody extends Body {
         velocity = momentum.copy().div(mass * gamma);
         velocityMagnitude = velocity.magnitude();
         speedPercentC = (velocityMagnitude / SPEED_OF_LIGHT) * 100;
-
-        if (constantVelocity != null) {
+        
+        if(constantVelocity != null)
+        {
             velocity = constantVelocity.copy();
             double vMag = velocity.magnitude();
-            double gammaNew = (vMag == 0) ? 1.0 : 1.0 / Math.sqrt(1 - Math.pow(vMag / SPEED_OF_LIGHT, 2));
-            gamma = gammaNew;
+            gamma = (vMag == 0) ? 1.0 : 1.0 / Math.sqrt(1 - Math.pow(vMag / SPEED_OF_LIGHT, 2));
             momentum = velocity.copy().mul(mass * gamma);
             momentumMagnitude = momentum.magnitude();
             velocityMagnitude = vMag;
             speedPercentC = (vMag / SPEED_OF_LIGHT) * 100;
         }
-        sumOfForces = new Vector(0, 0, 0);
+        sumOfForces = new Vector2(0, 0);
     }
-
+    
     // -----------------------------------------------------------------
     // Update Position using simple Euler integration
     // -----------------------------------------------------------------
-    public void updatePosition(double dt) {
+    public void updatePosition(double dt)
+    {
         Vector displacement = velocity.copy().mul(dt);
         position = position.add(displacement);
     }
-
+    
     // -----------------------------------------------------------------
     // Update Energy: Kinetic (Relativistic), Potential, and Internal energies.
     // -----------------------------------------------------------------
-    public void updateEnergy() {
+    public void updateEnergy()
+    {
         double vMag = velocityMagnitude;
-        if (mass == 0) {
+        if(mass == 0)
+        {
             kineticEnergy = momentum.magnitude() * SPEED_OF_LIGHT;
-        } else {
+        }
+        else
+        {
             double gammaLocal = (vMag == 0) ? 1.0 : 1.0 / Math.sqrt(1 - Math.pow(vMag / SPEED_OF_LIGHT, 2));
             kineticEnergy = (gammaLocal - 1) * mass * SPEED_OF_LIGHT * SPEED_OF_LIGHT;
         }
         potentialEnergy = getPotentialEnergy();
         internalEnergy = getInternalEnergy();
     }
-
+    
     // -----------------------------------------------------------------
     // Main Update Method
     // -----------------------------------------------------------------
     @Override
-    public void update(double dt) {
-        if (mass == 0) {
-            if (constantVelocity != null) {
+    public void update(double dt)
+    {
+        if(mass == 0)
+        {
+            if(constantVelocity != null)
+            {
                 velocity = constantVelocity.copy().normalize().mul(SPEED_OF_LIGHT);
-            } else if (velocity.magnitude() > 0) {
+            }
+            else if(velocity.magnitude() > 0)
+            {
                 velocity = velocity.copy().normalize().mul(SPEED_OF_LIGHT);
-            } else {
-                velocity = new Vector(SPEED_OF_LIGHT, 0, 0);
+            }
+            else
+            {
+                velocity = new Vector2(SPEED_OF_LIGHT, 0);
             }
             velocityMagnitude = velocity.magnitude();
             speedPercentC = (velocityMagnitude / SPEED_OF_LIGHT) * 100;
@@ -228,78 +277,96 @@ public class Rigidbody extends Body {
         updatePosition(dt);
         updateEnergy();
     }
-
+    
     // -----------------------------------------------------------------
     // Implementation of abstract Body getters
+    @Override
+    public String getName()
+    {
+        return name;
+    }
+    
     // -----------------------------------------------------------------
     @Override
-    public double getMass() {
+    public double getMass()
+    {
         return mass;
     }
-
+    
     @Override
-    public Vector getPos() {
+    public Vector getPos()
+    {
         return position;
     }
-
+    
     @Override
-    public Vector getVel() {
+    public Vector getVel()
+    {
         return velocity;
     }
-
+    
     @Override
-    public double getVelocityMagnitude() {
+    public double getVelocityMagnitude()
+    {
         return velocityMagnitude;
     }
-
+    
     @Override
-    public double getSpeedPercentC() {
+    public double getSpeedPercentC()
+    {
         return speedPercentC;
     }
-
+    
     @Override
-    public Vector getMomentum() {
+    public Vector getMomentum()
+    {
         return momentum;
     }
-
+    
     @Override
-    public double getMomentumMagnitude() {
+    public double getMomentumMagnitude()
+    {
         return momentumMagnitude;
     }
-
+    
     @Override
-    public double getForceMagnitude() {
+    public double getForceMagnitude()
+    {
         return forceMagnitude;
     }
-
+    
     @Override
-    public double getNetAccelerationMagnitude() {
+    public double getNetAccelerationMagnitude()
+    {
         return netAccelerationMagnitude;
     }
-
+    
     @Override
-    public double getKineticEnergy() {
+    public double getKineticEnergy()
+    {
         return kineticEnergy;
     }
-
+    
     @Override
-    public double getPotentialEnergy() {
+    public double getPotentialEnergy()
+    {
         return potentialEnergy;
     }
-
+    
     @Override
-    public double getInternalEnergy() {
+    public double getInternalEnergy()
+    {
         return internalEnergy;
     }
-
+    
     @Override
-    public double getGamma() {
+    public double getGamma()
+    {
         return gamma;
     }
-    public Rigidbody(double mass, Vector velocity, Vector momentum, Vector position,
-                     Vector sumOfForces, Vector sumOfAccelerations,
-                     double kineticEnergy, double potentialEnergy, double internalEnergy,
-                     Vector constantVelocity, Vector constantAcceleration, Vector constantForce) {
+    
+    public Rigidbody(double mass, Vector velocity, Vector momentum, Vector position, Vector sumOfForces, Vector sumOfAccelerations, double kineticEnergy, double potentialEnergy, double internalEnergy, Vector constantVelocity, Vector constantAcceleration, Vector constantForce)
+    {
         this.mass = mass;
         this.velocity = velocity;
         this.momentum = momentum;
@@ -309,16 +376,16 @@ public class Rigidbody extends Body {
         this.kineticEnergy = kineticEnergy;
         this.potentialEnergy = potentialEnergy;
         this.internalEnergy = internalEnergy;
-
+        
         // Initialize additional computed fields
         this.velocityMagnitude = velocity.magnitude();
         this.momentumMagnitude = momentum.magnitude();
         this.forceMagnitude = sumOfForces.magnitude();
         this.netAccelerationMagnitude = sumOfAccelerations.magnitude();
-
+        
         this.speedPercentC = (this.velocityMagnitude / SPEED_OF_LIGHT) * 100;
         this.gamma = (this.velocityMagnitude == 0) ? 1.0 : 1.0 / Math.sqrt(1 - Math.pow(this.velocityMagnitude / SPEED_OF_LIGHT, 2));
-
+        
         this.constantVelocity = constantVelocity;
         this.constantAcceleration = constantAcceleration;
         this.constantForce = constantForce;

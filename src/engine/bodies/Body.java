@@ -27,6 +27,7 @@ public abstract class Body {
 
     // -------------------------------
     // Your existing abstract methods:
+    public abstract String getName();
     public abstract void update(double dt);
     public abstract double getMass();
     public abstract Vector getPos();

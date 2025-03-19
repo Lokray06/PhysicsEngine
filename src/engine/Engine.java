@@ -1,13 +1,14 @@
 package engine;
 
 import engine.bodies.Body;
+import scenes.ConstantAcceleratingBodyInSpace;
 
 public class Engine {
     // Accumulated time since the last fixed update (in seconds)
     public static double deltaTime = 0d;
-    // Fixed timestep (set via scene.timeStep)
-    public static double TIME_STEP = 1d / 60d;
-    public static double SIMULATION_TIME_STEP = 1d / 60d;
+    
+    public static float timeScale = 1f;
+    public static double TIME_STEP = 1 / 60d;
     // Total simulation time
     public static double uptime = 0d;
 
@@ -42,38 +43,47 @@ public class Engine {
     }
 
     // Call this method repeatedly (e.g., via a Swing Timer) to update the simulation.
+    // Declare an accumulator variable at the class level (or as a static variable)
+    private static double debugAccumulator = 0;
+    
     public static void update() {
         if (!isRunning) {
-            // If paused, update the lastUpdateTime to avoid accumulating deltaTime.
             lastUpdateTime = System.nanoTime();
             return;
         }
-        // Use the scene's time step as the simulation step.
-        SIMULATION_TIME_STEP = scene.timeStep;
-
+        
         long now = System.nanoTime();
-        // Convert elapsed time from nanoseconds to seconds.
         double frameTime = (now - lastUpdateTime) / 1e9;
         lastUpdateTime = now;
         deltaTime += frameTime;
-
-        // Clamp deltaTime to avoid spiral of death if a frame takes too long.
+        
         if (deltaTime > 0.25) {
             deltaTime = 0.25;
         }
-
-        // Update the simulation using fixed timesteps.
-        while (deltaTime >= TIME_STEP) {
+        
+        // Add frame time to the debug accumulator
+        debugAccumulator += frameTime;
+        
+        // If one second has passed, output debug info for each body and reset accumulator.
+        if (debugAccumulator >= 1.0) {
             for (Body body : scene.bodies) {
-                body.update(SIMULATION_TIME_STEP);
-                // Uncomment the next line if you wish to print debug info.
                 Debugger.debugBody(body);
             }
+            debugAccumulator -= 1.0;  // Reset accumulator, or set to zero if no leftover time is needed.
+        }
+        
+        while (deltaTime >= TIME_STEP) {
+            double fixedDt = TIME_STEP;
+            double scaledDt = fixedDt * timeScale;
+            for (Body body : scene.bodies) {
+                body.update(scaledDt);
+            }
             deltaTime -= TIME_STEP;
-            uptime += TIME_STEP;
+            uptime += fixedDt * timeScale;
         }
     }
-
+    
+    
     // Start the simulation.
     public static void togglePlay() {
         isRunning = !isRunning;
