@@ -38,6 +38,10 @@ public class SimulationUI extends JFrame {
             addMouseMotionListener(this);
             addMouseWheelListener(this);
             setBackground(Color.BLACK);
+
+            // Add a timer to repaint the canvas every 1/60th of a second (~16ms)
+            Timer timer = new Timer(1000 / 60, e -> repaint());
+            timer.start();
         }
 
         @Override

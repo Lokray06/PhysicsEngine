@@ -27,7 +27,7 @@ public class ConstantAcceleratingBodyInSpace {
         scene.add(photon);
 
         // Set simulation timestep
-        scene.timeStep = 0.0000016d;
+        scene.timeStep = 0.00000000016d;
 
         // Launch the full-screen canvas UI on the EDT.
         SwingUtilities.invokeLater(() -> {
